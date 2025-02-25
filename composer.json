@@ -1,0 +1,34 @@
+{
+  "name": "esoul/laravel-rabbitmq-roadrunner-driver",
+  "description": "Laravel Queue RoadRunner Driver",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Tomáš Vojík",
+      "email": "vojik@wboy.cz"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "php-amqplib/php-amqplib": "^3.7",
+    "illuminate/queue": "^11.43",
+    "symfony/serializer": "^7.2",
+    "symfony/property-access": "^7.2"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2",
+    "squizlabs/php_codesniffer": "^3.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Esoul\\LaravelRoadrunnerQueueDriver\\": "src/"
+    }
+  },
+  "scripts": {
+    "phpstan": "./vendor/bin/phpstan",
+    "phpcs": "./vendor/bin/phpcs",
+    "phpcbf": "./vendor/bin/phpcbf"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true
+}
