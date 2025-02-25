@@ -574,7 +574,7 @@ class RabbitMQQueue extends Queue implements QueueContract, RabbitMQQueueContrac
     /**
      * {@inheritdoc}
      *
-     * @param iterable<string|object> $jobs
+     * @param  iterable<string|object>  $jobs
      *
      * @throws AMQPProtocolChannelException
      */
@@ -583,9 +583,9 @@ class RabbitMQQueue extends Queue implements QueueContract, RabbitMQQueueContrac
     }
 
     /**
-     * @param iterable<string|object> $jobs
-     * @param mixed $data
-     * @param string|null|\BackedEnum $queue
+     * @param  iterable<string|object>  $jobs
+     * @param  mixed  $data
+     * @param  string|null|\BackedEnum  $queue
      * @throws AMQPProtocolChannelException
      */
     protected function publishBatch($jobs, $data = '', $queue = null): void {
@@ -597,7 +597,7 @@ class RabbitMQQueue extends Queue implements QueueContract, RabbitMQQueueContrac
     }
 
     /**
-     * @param array<string,mixed> $options
+     * @param  array<string,mixed>  $options
      * @throws AMQPProtocolChannelException
      */
     public function bulkRaw(string $payload, ?string $queue = null, array $options = []): int | string | null {
@@ -763,11 +763,20 @@ class RabbitMQQueue extends Queue implements QueueContract, RabbitMQQueueContrac
      */
     protected function createPayloadArray($job, $queue, $data = ''): array {
         if (is_object($job)) {
-            $baseNamespace = 'App\\Jobs\\';
-            $jobId = strtolower(str_replace('\\', '.', str_replace($baseNamespace, '', $job::class)));
-            if (str_starts_with($jobId, '.')) {
-                $jobId = substr($jobId, 1);
-            }
+            $baseNamespace = 'App\\';
+            // Should convert the class name to a string from `App\Jobs\Namespace1\Namespace2\JobName` to `jobs.namespace1.namespace2.jobName`.
+            $jobId = implode(
+                '.',
+                array_map(
+                    'lcfirst',
+                    array_filter(
+                        explode(
+                            '\\',
+                            str_replace($baseNamespace, '', $job::class)
+                        ),
+                    ),
+                ),
+            );
             if (isset($job->payload)) {
                 if (is_object($job->payload)) {
                     return [

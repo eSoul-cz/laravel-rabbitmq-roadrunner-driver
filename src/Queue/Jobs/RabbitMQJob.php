@@ -143,7 +143,7 @@ class RabbitMQJob extends Job implements JobContract
         $payload = $this->payload();
         $job = $this->getRabbitMQMessageHeaders()['rr_job'];
 
-        $baseNamespace = '\\App\\Jobs\\';
+        $baseNamespace = '\\App\\';
 
         $parts = explode('.', $job);
         $class = $baseNamespace . implode('\\', array_map('ucfirst', $parts));
