@@ -764,7 +764,8 @@ class RabbitMQQueue extends Queue implements QueueContract, RabbitMQQueueContrac
     protected function createPayloadArray($job, $queue, $data = ''): array {
         if (is_object($job)) {
             $baseNamespace = 'App\\';
-            // Should convert the class name to a string from `App\Jobs\Namespace1\Namespace2\JobName` to `jobs.namespace1.namespace2.jobName`.
+            // Should convert the class name to a string from `App\Jobs\Namespace1\Namespace2\JobName`
+            // to `jobs.namespace1.namespace2.jobName`.
             $jobId = implode(
                 '.',
                 array_map(
