@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace Esoul\LaravelRoadrunnerQueueDriver;
 
 use Esoul\LaravelRoadrunnerQueueDriver\Queue\RabbitMQQueue;
-use Exception;
-use Illuminate\Container\Container;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Queue\Worker;
 use Illuminate\Queue\WorkerOptions;
 use PhpAmqpLib\Channel\AMQPChannel;
@@ -16,44 +15,42 @@ use Throwable;
 
 class Consumer extends Worker
 {
-    /** @var Container */
     protected Container $container;
 
-    /** @var string */
     protected string $consumerTag;
 
-    /** @var int */
     protected int $prefetchSize;
 
-    /** @var int */
     protected int $maxPriority;
 
-    /** @var int */
     protected int $prefetchCount;
 
-    /** @var AMQPChannel */
     protected AMQPChannel $channel;
 
-    /** @var object|null */
     protected ?object $currentJob = null;
 
-    public function setContainer(Container $value): void {
+    public function setContainer(Container $value): void
+    {
         $this->container = $value;
     }
 
-    public function setConsumerTag(string $value): void {
+    public function setConsumerTag(string $value): void
+    {
         $this->consumerTag = $value;
     }
 
-    public function setMaxPriority(int $value): void {
+    public function setMaxPriority(int $value): void
+    {
         $this->maxPriority = $value;
     }
 
-    public function setPrefetchSize(int $value): void {
+    public function setPrefetchSize(int $value): void
+    {
         $this->prefetchSize = $value;
     }
 
-    public function setPrefetchCount(int $value): void {
+    public function setPrefetchCount(int $value): void
+    {
         $this->prefetchCount = $value;
     }
 
@@ -62,17 +59,14 @@ class Consumer extends Worker
      *
      * @param  string  $connectionName
      * @param  string  $queue
-     * @param  WorkerOptions  $options
-     * @return int
      *
      * @throws Throwable
      */
-    public function daemon($connectionName, $queue, WorkerOptions $options): int {
+    public function daemon($connectionName, $queue, WorkerOptions $options): int
+    {
         if ($this->supportsAsyncSignals()) {
             $this->listenForSignals();
         }
-
-        dump($queue);
 
         $lastRestart = $this->getTimestampOfLastQueueRestart();
 
@@ -110,8 +104,6 @@ class Consumer extends Worker
                 $jobClass,
                 &$jobsProcessed
             ): void {
-            //                dump($message->get_properties());
-                dump($jobClass);
                 $job = new $jobClass(
                     $this->container,
                     $connection,
@@ -145,7 +137,7 @@ class Consumer extends Worker
             // Before reserving any jobs, we will make sure this queue is not paused and
             // if it is we will just pause this worker for a given amount of time and
             // make sure we do not need to kill this worker process off completely.
-            if (!$this->daemonShouldRun($options, $connectionName, $queue)) {
+            if (! $this->daemonShouldRun($options, $connectionName, $queue)) {
                 $this->pauseWorker($options, $lastRestart);
 
                 continue;
@@ -158,7 +150,7 @@ class Consumer extends Worker
                 $this->exceptions->report($exception);
 
                 $this->kill(self::EXIT_ERROR, $options);
-            } catch (Exception | Throwable $exception) {
+            } catch (Throwable $exception) {
                 $this->exceptions->report($exception);
 
                 $this->stopWorkerIfLostConnection($exception);
@@ -175,17 +167,18 @@ class Consumer extends Worker
             $status = $this->stopIfNecessary(
                 $options,
                 $lastRestart,
-                $startTime,
+                (int) $startTime,
                 $jobsProcessed,
                 $this->currentJob
             );
 
-            if (!is_null($status)) {
+            if (! is_null($status)) {
                 return $this->stop($status, $options);
             }
 
             $this->currentJob = null;
         }
+
         return self::EXIT_SUCCESS;
     }
 
@@ -195,8 +188,9 @@ class Consumer extends Worker
      * @param  string  $connectionName
      * @param  string  $queue
      */
-    protected function daemonShouldRun(WorkerOptions $options, $connectionName, $queue): bool {
-        return !((($this->isDownForMaintenance)() && !$options->force) || $this->paused);
+    protected function daemonShouldRun(WorkerOptions $options, $connectionName, $queue): bool
+    {
+        return ! ((($this->isDownForMaintenance)() && ! $options->force) || $this->paused);
     }
 
     /**
@@ -204,9 +198,9 @@ class Consumer extends Worker
      *
      * @param  int  $status
      * @param  WorkerOptions|null  $options
-     * @return int
      */
-    public function stop($status = 0, $options = null): int {
+    public function stop($status = 0, $options = null): int
+    {
         // Tell the server you are going to stop consuming.
         // It will finish up the last message and not send you any more.
         $this->channel->basic_cancel($this->consumerTag, false, true);

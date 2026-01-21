@@ -15,14 +15,17 @@ class ConfigFactory
 
     /**
      * Create a config object from config array
+     *
+     * @param  array<string,mixed>  $config
      */
-    public static function make(array $config = []): AMQPConnectionConfig {
+    public static function make(array $config = []): AMQPConnectionConfig
+    {
         return tap(
-            new AMQPConnectionConfig(),
+            new AMQPConnectionConfig,
             function (AMQPConnectionConfig $connectionConfig) use ($config) {
                 // Set the connection to a Lazy by default
                 $connectionConfig->setIsLazy(
-                    !in_array(
+                    ! in_array(
                         Arr::get($config, 'lazy') ?? true,
                         [false, 0, '0', 'false', 'no'],
                         true
@@ -49,8 +52,12 @@ class ConfigFactory
         );
     }
 
-    protected static function getSLLOptionsFromConfig(AMQPConnectionConfig $connectionConfig, array $config): void {
-        $sslConfig = Arr::get($config, self::CONFIG_OPTIONS . '.ssl_options', []);
+    /**
+     * @param  array<string,mixed>  $config
+     */
+    protected static function getSLLOptionsFromConfig(AMQPConnectionConfig $connectionConfig, array $config): void
+    {
+        $sslConfig = Arr::get($config, self::CONFIG_OPTIONS.'.ssl_options', []);
 
         if ($caFile = Arr::get($sslConfig, 'cafile')) {
             $connectionConfig->setSslCaCert($caFile);
@@ -70,7 +77,11 @@ class ConfigFactory
         }
     }
 
-    protected static function getHostFromConfig(AMQPConnectionConfig $connectionConfig, array $config): void {
+    /**
+     * @param  array<string,mixed>  $config
+     */
+    protected static function getHostFromConfig(AMQPConnectionConfig $connectionConfig, array $config): void
+    {
         $hostConfig = Arr::first(Arr::shuffle(Arr::get($config, self::CONFIG_HOSTS, [])), null, []);
 
         if ($location = Arr::get($hostConfig, 'host')) {
@@ -90,17 +101,24 @@ class ConfigFactory
         }
     }
 
-    protected static function getHeartbeatFromConfig(AMQPConnectionConfig $connectionConfig, array $config): void {
-        $heartbeat = Arr::get($config, self::CONFIG_OPTIONS . '.heartbeat');
+    /**
+     * @param  array<string,mixed>  $config
+     */
+    protected static function getHeartbeatFromConfig(AMQPConnectionConfig $connectionConfig, array $config): void
+    {
+        $heartbeat = Arr::get($config, self::CONFIG_OPTIONS.'.heartbeat');
 
         if (is_numeric($heartbeat) && intval($heartbeat) > 0) {
             $connectionConfig->setHeartbeat((int) $heartbeat);
         }
     }
 
+    /**
+     * @param  array<string,mixed>  $config
+     */
     protected static function getNetworkProtocolFromConfig(
         AMQPConnectionConfig $connectionConfig,
-        array                $config
+        array $config
     ): void {
         if ($networkProtocol = Arr::get($config, 'network_protocol')) {
             $connectionConfig->setNetworkProtocol($networkProtocol);

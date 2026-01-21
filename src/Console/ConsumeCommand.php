@@ -37,29 +37,39 @@ class ConsumeCommand extends WorkCommand
 
     protected $description = 'Consume messages';
 
-    public function handle(): void {
+    public function handle(): ?int
+    {
         /** @var Consumer $consumer */
         $consumer = $this->worker;
 
         $consumer->setContainer($this->laravel);
-        $consumer->setName($this->option('name'));
+
+        /** @var string $name */
+        $name = $this->option('name');
+        $consumer->setName($name);
+
         $consumer->setConsumerTag($this->consumerTag());
         $consumer->setMaxPriority((int) $this->option('max-priority'));
         $consumer->setPrefetchSize((int) $this->option('prefetch-size'));
         $consumer->setPrefetchCount((int) $this->option('prefetch-count'));
 
-        parent::handle();
+        return parent::handle();
     }
 
-    protected function consumerTag(): string {
-        if ($consumerTag = $this->option('consumer-tag')) {
+    protected function consumerTag(): string
+    {
+        /** @var string|null $consumerTag */
+        $consumerTag = $this->option('consumer-tag');
+        if ($consumerTag) {
             return $consumerTag;
         }
 
+        /** @var string $name */
+        $name = $this->option('name');
         $consumerTag = implode('_', [
             Str::slug(config('app.name', 'laravel')),
-            Str::slug($this->option('name')),
-            md5(serialize($this->options()) . Str::random(16) . getmypid()),
+            Str::slug($name),
+            md5(serialize($this->options()).Str::random(16).getmypid()),
         ]);
 
         return Str::substr($consumerTag, 0, 255);

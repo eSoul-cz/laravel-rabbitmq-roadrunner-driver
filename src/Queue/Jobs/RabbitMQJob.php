@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Esoul\LaravelRoadrunnerQueueDriver\Queue\Jobs;
 
 use Esoul\LaravelRoadrunnerQueueDriver\Queue\RabbitMQQueue;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Contracts\Queue\Job as JobContract;
 use Illuminate\Queue\Jobs\Job;
 use Illuminate\Support\Arr;
@@ -18,18 +18,20 @@ class RabbitMQJob extends Job implements JobContract
 {
     /**
      * The JSON decoded version of "$message".
-     *
-     * @var array
+     */
+    /**
+     * @var array<string,mixed>
      */
     protected array $decoded;
 
     public function __construct(
-        Container               $container,
+        Container $container,
         protected RabbitMQQueue $rabbitmq,
-        protected AMQPMessage   $message,
-        string                  $connectionName,
-        string                  $queue
+        protected AMQPMessage $message,
+        string $connectionName,
+        string $queue
     ) {
+        /** @phpstan-ignore assign.propertyType */
         $this->container = $container;
         $this->connectionName = $connectionName;
         $this->queue = $queue;
@@ -39,37 +41,43 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * {@inheritdoc}
      */
-    public function getJobId() {
+    public function getJobId()
+    {
         return $this->getRabbitMQMessageHeaders()['rr_id'] ?? $this->decoded['id'] ?? null;
     }
 
-    public function getName() {
+    public function getName()
+    {
         return $this->getRabbitMQMessageHeaders()['rr_job'] ?? $this->decoded['job'] ?? null;
     }
 
     /**
      * Get the headers from the rabbitMQ message.
+     *
+     * @return array<string,mixed>|null
      */
-    protected function getRabbitMQMessageHeaders(): ?array {
+    protected function getRabbitMQMessageHeaders(): ?array
+    {
         /** @var AMQPTable|null $headers */
-        if (!$headers = Arr::get($this->message->get_properties(), 'application_headers')) {
-            return null;
-        }
+        $headers = Arr::get($this->message->get_properties(), 'application_headers');
 
-        return $headers->getNativeData();
+        return $headers?->getNativeData();
+
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getRawBody(): string {
+    public function getRawBody(): string
+    {
         return $this->message->getBody();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function markAsFailed(): void {
+    public function markAsFailed(): void
+    {
         parent::markAsFailed();
 
         // We must tel rabbitMQ this Job is failed
@@ -83,12 +91,13 @@ class RabbitMQJob extends Job implements JobContract
      *
      * @throws BindingResolutionException
      */
-    public function delete(): void {
+    public function delete(): void
+    {
         parent::delete();
 
         // When delete is called and the Job was not failed, the message must be acknowledged.
         // This is because this is a controlled call by a developer. So the message was handled correct.
-        if (!$this->failed) {
+        if (! $this->failed) {
             $this->rabbitmq->ack($this);
         }
     }
@@ -100,7 +109,8 @@ class RabbitMQJob extends Job implements JobContract
      *
      * @throws AMQPProtocolChannelException
      */
-    public function release($delay = 0): void {
+    public function release($delay = 0): void
+    {
         parent::release();
 
         // Always create a new message when this Job is released
@@ -115,8 +125,9 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * {@inheritdoc}
      */
-    public function attempts(): int {
-        if (!$data = $this->getRabbitMQMessageHeaders()) {
+    public function attempts(): int
+    {
+        if (! $data = $this->getRabbitMQMessageHeaders()) {
             return 1;
         }
 
@@ -128,43 +139,47 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * Get the underlying RabbitMQ connection.
      */
-    public function getRabbitMQ(): RabbitMQQueue {
+    public function getRabbitMQ(): RabbitMQQueue
+    {
         return $this->rabbitmq;
     }
 
     /**
      * Get the underlying RabbitMQ message.
      */
-    public function getRabbitMQMessage(): AMQPMessage {
+    public function getRabbitMQMessage(): AMQPMessage
+    {
         return $this->message;
     }
 
-    public function fire() {
+    public function fire()
+    {
         $payload = $this->payload();
         $job = $this->getRabbitMQMessageHeaders()['rr_job'];
 
         $baseNamespace = '\\App\\';
 
         $parts = explode('.', $job);
-        $class = $baseNamespace . implode('\\', array_map('ucfirst', $parts));
+        $class = $baseNamespace.implode('\\', array_map('ucfirst', $parts));
 
         /** @var class-string|null $payloadClass */
         $payloadClass = $payload['payloadClass'] ?? null;
         if (is_string($payloadClass) && class_exists($payloadClass) && isset($payload['data'])) {
-            $payload = $this->unserialize($payloadClass, $payload['data']);
+            $payload = self::unserialize($payloadClass, $payload['data']);
         }
 
-        dump($payload, $job);
         ($this->instance = $this->resolve($class))->handle($this, $payload);
     }
 
     /**
      * @template T of object
+     *
      * @param  class-string<T>  $payloadClass
      * @param  array<string,mixed>  $data
      * @return T|null
      */
-    protected static function unserialize(string $payloadClass, array $data): ?object {
+    protected static function unserialize(string $payloadClass, array $data): ?object
+    {
         return RabbitMQQueue::getSerializer()->denormalize($data, $payloadClass, 'json');
     }
 }

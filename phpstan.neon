@@ -4,4 +4,4 @@ parameters:
 	paths:
 		- src
 		- config
-	tmpDir: temp
+	tmpDir: cache/phpstan

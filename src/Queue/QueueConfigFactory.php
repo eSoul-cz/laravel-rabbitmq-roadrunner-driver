@@ -12,10 +12,12 @@ class QueueConfigFactory
 
     /**
      * Create a config object from config array
+     *
      * @param  array<string,mixed>  $config
      */
-    public static function make(array $config = []): QueueConfig {
-        return tap(new QueueConfig(), function (QueueConfig $queueConfig) use ($config) {
+    public static function make(array $config = []): QueueConfig
+    {
+        return tap(new QueueConfig, function (QueueConfig $queueConfig) use ($config) {
             if (! empty($queue = Arr::get($config, 'queue'))) {
                 $queueConfig->setQueue($queue);
             }
@@ -30,8 +32,9 @@ class QueueConfigFactory
     /**
      * @param  array<string,mixed>  $config
      */
-    protected static function getOptionsFromConfig(QueueConfig $queueConfig, array $config): void {
-        $queueOptions = Arr::get($config, self::CONFIG_OPTIONS . '.queue', []) ?: [];
+    protected static function getOptionsFromConfig(QueueConfig $queueConfig, array $config): void
+    {
+        $queueOptions = Arr::get($config, self::CONFIG_OPTIONS.'.queue', []) ?: [];
 
         if ($job = Arr::pull($queueOptions, 'job')) {
             $queueConfig->setAbstractJob($job);

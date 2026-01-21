@@ -8,13 +8,21 @@ use Esoul\LaravelRoadrunnerQueueDriver\Console\ConsumeCommand;
 use Esoul\LaravelRoadrunnerQueueDriver\Queue\Connectors\RabbitMQConnector;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Queue\QueueManager;
-use Illuminate\Support\ServiceProvider;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class LaravelQueueRoadrunnerServiceProvider extends ServiceProvider
+class LaravelQueueRoadrunnerServiceProvider extends PackageServiceProvider
 {
-    public function register(): void {
-        $this->mergeConfigFrom(__DIR__ . '/../config/rabbitmq.php', 'queue.connections.rabbitmq');
+    public function configurePackage(Package $package): void
+    {
+        $package
+            ->name('laravel-rabbitmq-roadrunner-driver')
+            ->hasConfigFile('rabbitmq')
+            ->hasCommand(ConsumeCommand::class);
+    }
 
+    public function packageRegistered(): void
+    {
         if ($this->app->runningInConsole()) {
             $this->app->singleton(
                 'rabbitmq.consumer',
@@ -24,9 +32,9 @@ class LaravelQueueRoadrunnerServiceProvider extends ServiceProvider
                     };
 
                     return new Consumer(
-                        $this->app['queue'],
-                        $this->app['events'],
-                        $this->app[ExceptionHandler::class],
+                        $this->app->get('queue'),
+                        $this->app->get('events'),
+                        $this->app->get(ExceptionHandler::class),
                         $isDownForMaintenance
                     );
                 }
@@ -36,42 +44,26 @@ class LaravelQueueRoadrunnerServiceProvider extends ServiceProvider
                 ConsumeCommand::class,
                 static function ($app) {
                     return new ConsumeCommand(
-                        $app['rabbitmq.consumer'],
-                        $app['cache.store']
+                        $app->get('rabbitmq.consumer'),
+                        $app->get('cache.store'),
                     );
                 }
             );
-
-            $this->commands(
-                [
-                    ConsumeCommand::class,
-                ]
-            );
         }
-
-//        $this->commands(
-//            [
-//                Console\ExchangeDeclareCommand::class,
-//                Console\ExchangeDeleteCommand::class,
-//                Console\QueueBindCommand::class,
-//                Console\QueueDeclareCommand::class,
-//                Console\QueueDeleteCommand::class,
-//                Console\QueuePurgeCommand::class,
-//            ]
-//        );
     }
 
     /**
      * Register the application's event listeners.
      */
-    public function boot(): void {
+    public function packageBooted(): void
+    {
         /** @var QueueManager $queue */
-        $queue = $this->app['queue'];
+        $queue = $this->app->get('queue');
 
         $queue->addConnector(
             'rabbitmq',
             function () {
-                return new RabbitMQConnector($this->app['events']);
+                return new RabbitMQConnector($this->app->get('events'));
             }
         );
     }

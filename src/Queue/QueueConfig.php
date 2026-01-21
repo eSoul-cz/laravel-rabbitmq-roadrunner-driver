@@ -32,6 +32,7 @@ class QueueConfig
 
     protected bool $quorum = false;
 
+    /** @var array<string,mixed> */
     protected array $options = [];
 
     /**
@@ -40,11 +41,13 @@ class QueueConfig
      * When no queue name is provided by laravel queue / workers via the QueueApi method's,
      * this value is used to publish messages.
      */
-    public function getQueue(): string {
+    public function getQueue(): string
+    {
         return $this->queue;
     }
 
-    public function setQueue(string $queue): QueueConfig {
+    public function setQueue(string $queue): QueueConfig
+    {
         $this->queue = $queue;
 
         return $this;
@@ -54,11 +57,13 @@ class QueueConfig
      * Returns &true; as indication that jobs should be dispatched after all database transactions
      * have been committed.
      */
-    public function isDispatchAfterCommit(): bool {
+    public function isDispatchAfterCommit(): bool
+    {
         return $this->dispatchAfterCommit;
     }
 
-    public function setDispatchAfterCommit(mixed $dispatchAfterCommit): QueueConfig {
+    public function setDispatchAfterCommit(mixed $dispatchAfterCommit): QueueConfig
+    {
         $this->dispatchAfterCommit = $this->toBoolean($dispatchAfterCommit);
 
         return $this;
@@ -67,11 +72,13 @@ class QueueConfig
     /**
      * Get the Job::class to use when processing messages
      */
-    public function getAbstractJob(): string {
+    public function getAbstractJob(): string
+    {
         return $this->abstractJob;
     }
 
-    public function setAbstractJob(string $abstract): QueueConfig {
+    public function setAbstractJob(string $abstract): QueueConfig
+    {
         $this->abstractJob = $abstract;
 
         return $this;
@@ -90,11 +97,13 @@ class QueueConfig
      *
      * @see[https://www.rabbitmq.com/queues.html#basics]
      */
-    public function isPrioritizeDelayed(): bool {
+    public function isPrioritizeDelayed(): bool
+    {
         return $this->prioritizeDelayed;
     }
 
-    public function setPrioritizeDelayed(mixed $prioritizeDelayed): QueueConfig {
+    public function setPrioritizeDelayed(mixed $prioritizeDelayed): QueueConfig
+    {
         $this->prioritizeDelayed = $this->toBoolean($prioritizeDelayed);
 
         return $this;
@@ -107,11 +116,13 @@ class QueueConfig
      *
      * @see https://www.rabbitmq.com/priority.html
      */
-    public function getQueueMaxPriority(): int {
+    public function getQueueMaxPriority(): int
+    {
         return $this->queueMaxPriority;
     }
 
-    public function setQueueMaxPriority(mixed $queueMaxPriority): QueueConfig {
+    public function setQueueMaxPriority(mixed $queueMaxPriority): QueueConfig
+    {
         if (is_numeric($queueMaxPriority) && intval($queueMaxPriority) > 1) {
             $this->queueMaxPriority = (int) $queueMaxPriority;
         }
@@ -127,11 +138,13 @@ class QueueConfig
      * to a queue with the same name as the routing key.
      * With a routing key that is the same as the queue name, every queue is immediately tied to the default exchange.
      */
-    public function getExchange(): string {
+    public function getExchange(): string
+    {
         return $this->exchange;
     }
 
-    public function setExchange(string $exchange): QueueConfig {
+    public function setExchange(string $exchange): QueueConfig
+    {
         $this->exchange = $exchange;
 
         return $this;
@@ -145,11 +158,13 @@ class QueueConfig
      *
      * The default type is set as 'direct'
      */
-    public function getExchangeType(): string {
+    public function getExchangeType(): string
+    {
         return $this->exchangeType;
     }
 
-    public function setExchangeType(string $exchangeType): QueueConfig {
+    public function setExchangeType(string $exchangeType): QueueConfig
+    {
         $this->exchangeType = $exchangeType;
 
         return $this;
@@ -161,11 +176,13 @@ class QueueConfig
      *
      * The default routing-key is the given destination: '%s'.
      */
-    public function getExchangeRoutingKey(): string {
+    public function getExchangeRoutingKey(): string
+    {
         return $this->exchangeRoutingKey;
     }
 
-    public function setExchangeRoutingKey(string $exchangeRoutingKey): QueueConfig {
+    public function setExchangeRoutingKey(string $exchangeRoutingKey): QueueConfig
+    {
         $this->exchangeRoutingKey = $exchangeRoutingKey;
 
         return $this;
@@ -174,11 +191,13 @@ class QueueConfig
     /**
      * Returns &true;, if failed messages should be rerouted.
      */
-    public function isRerouteFailed(): bool {
+    public function isRerouteFailed(): bool
+    {
         return $this->rerouteFailed;
     }
 
-    public function setRerouteFailed(mixed $rerouteFailed): QueueConfig {
+    public function setRerouteFailed(mixed $rerouteFailed): QueueConfig
+    {
         $this->rerouteFailed = $this->toBoolean($rerouteFailed);
 
         return $this;
@@ -188,11 +207,13 @@ class QueueConfig
      * Get the exchange name with messages are published against.
      * The default exchange is empty, so messages will be published directly to a queue.
      */
-    public function getFailedExchange(): string {
+    public function getFailedExchange(): string
+    {
         return $this->failedExchange;
     }
 
-    public function setFailedExchange(string $failedExchange): QueueConfig {
+    public function setFailedExchange(string $failedExchange): QueueConfig
+    {
         $this->failedExchange = $failedExchange;
 
         return $this;
@@ -202,11 +223,13 @@ class QueueConfig
      * Get the substitution string for failed messages
      * The default routing-key is the given destination substituted by '%s.failed'.
      */
-    public function getFailedRoutingKey(): string {
+    public function getFailedRoutingKey(): string
+    {
         return $this->failedRoutingKey;
     }
 
-    public function setFailedRoutingKey(string $failedRoutingKey): QueueConfig {
+    public function setFailedRoutingKey(string $failedRoutingKey): QueueConfig
+    {
         $this->failedRoutingKey = $failedRoutingKey;
 
         return $this;
@@ -215,11 +238,13 @@ class QueueConfig
     /**
      * Returns &true;, if queue is marked or set as quorum queue.
      */
-    public function isQuorum(): bool {
+    public function isQuorum(): bool
+    {
         return $this->quorum;
     }
 
-    public function setQuorum(mixed $quorum): QueueConfig {
+    public function setQuorum(mixed $quorum): QueueConfig
+    {
         $this->quorum = $this->toBoolean($quorum);
 
         return $this;
@@ -227,15 +252,19 @@ class QueueConfig
 
     /**
      * Holds all unknown queue options provided in the connection config
+     *
+     * @return array<string,mixed>
      */
-    public function getOptions(): array {
+    public function getOptions(): array
+    {
         return $this->options;
     }
 
     /**
      * @param  array<string,mixed>  $options
      */
-    public function setOptions(array $options): QueueConfig {
+    public function setOptions(array $options): QueueConfig
+    {
         $this->options = $options;
 
         return $this;
@@ -250,7 +279,8 @@ class QueueConfig
      * Returns: &false;
      * For values: 0, '0', false, 'false', '', null, [] , 'ok', 'no', 'no not a bool', 'yes a bool'
      */
-    protected function toBoolean(mixed $value): bool {
+    protected function toBoolean(mixed $value): bool
+    {
         return filter_var($value, FILTER_VALIDATE_BOOLEAN);
     }
 }

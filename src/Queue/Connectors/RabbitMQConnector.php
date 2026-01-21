@@ -17,18 +17,21 @@ class RabbitMQConnector implements ConnectorInterface
 {
     protected Dispatcher $dispatcher;
 
-    public function __construct(Dispatcher $dispatcher) {
+    public function __construct(Dispatcher $dispatcher)
+    {
         $this->dispatcher = $dispatcher;
     }
 
     /**
      * Establish a queue connection.
      *
+     * @param  array<string,mixed>  $config
      * @return RabbitMQQueue
      *
      * @throws Exception
      */
-    public function connect(array $config): Queue {
+    public function connect(array $config): Queue
+    {
         $connection = ConnectionFactory::make($config);
 
         $queue = QueueFactory::make($config)->setConnection($connection);

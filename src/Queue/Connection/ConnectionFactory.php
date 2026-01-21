@@ -34,9 +34,12 @@ class ConnectionFactory
     /**
      * Create a Connection
      *
+     * @param  array<string,mixed>  $config
+     *
      * @throws Exception
      */
-    public static function make(array $config = []): AbstractConnection {
+    public static function make(array $config = []): AbstractConnection
+    {
         $connection = self::getConnectionFromConfig($config);
         $connectionConfig = ConfigFactory::make($config);
 
@@ -51,6 +54,7 @@ class ConnectionFactory
                 [AMQPLazyConnection::class, AMQPLazySocketConnection::class, AMQPLazySSLConnection::class]
             )
         ) {
+            /** @phpstan-ignore ternary.alwaysTrue */
             return self::createLazyConnection($connection ?: AMQPLazyConnection::class, $config);
         }
 
@@ -63,19 +67,28 @@ class ConnectionFactory
 
     /**
      * Get the validated connection from config
+     *
+     * @param  array<string,mixed>  $config
+     * @return class-string<AbstractConnection>
      */
-    protected static function getConnectionFromConfig(array $config): string {
+    protected static function getConnectionFromConfig(array $config): string
+    {
         $connection = (string) Arr::get($config, self::CONFIG_CONNECTION, self::CONNECTION_TYPE_DEFAULT);
 
+        /** @phpstan-ignore argument.type */
         self::assertConnectionFromConfig($connection);
 
+        /** @phpstan-ignore return.type */
         return $connection;
     }
 
     /**
      * Creation of your own connection
+     *
+     * @param  class-string<AbstractConnection>  $connection
      */
-    protected static function create($connection, AMQPConnectionConfig $config): AbstractConnection {
+    protected static function create(string $connection, AMQPConnectionConfig $config): AbstractConnection
+    {
         if ($config->getIoType() === AMQPConnectionConfig::IO_TYPE_SOCKET) {
             return self::createSocketConnection($connection, $config);
         }
@@ -83,9 +96,14 @@ class ConnectionFactory
         return self::createStreamConnection($connection, $config);
     }
 
-    protected static function createSocketConnection($connection, AMQPConnectionConfig $config): AMQPSocketConnection {
+    /**
+     * @param  class-string<AbstractConnection>  $connection
+     */
+    protected static function createSocketConnection(string $connection, AMQPConnectionConfig $config): AMQPSocketConnection
+    {
         self::assertSocketConnection($connection, $config);
 
+        /** @phpstan-ignore return.type */
         return new $connection(
             $config->getHost(),
             $config->getPort(),
@@ -105,12 +123,17 @@ class ConnectionFactory
         );
     }
 
-    protected static function createStreamConnection($connection, AMQPConnectionConfig $config): AMQPStreamConnection {
+    /**
+     * @param  class-string<AbstractConnection>  $connection
+     */
+    protected static function createStreamConnection(string $connection, AMQPConnectionConfig $config): AMQPStreamConnection
+    {
         self::assertStreamConnection($connection);
 
         if ($config->isSecure()) {
             self::assertSSLConnection($connection);
 
+            /** @phpstan-ignore return.type */
             return new $connection(
                 $config->getHost(),
                 $config->getPort(),
@@ -132,6 +155,7 @@ class ConnectionFactory
             );
         }
 
+        /** @phpstan-ignore return.type */
         return new $connection(
             $config->getHost(),
             $config->getPort(),
@@ -153,29 +177,40 @@ class ConnectionFactory
         );
     }
 
-    protected static function getReadWriteTimeout(AMQPConnectionConfig $config): float {
+    protected static function getReadWriteTimeout(AMQPConnectionConfig $config): float
+    {
         return min($config->getReadTimeout(), $config->getWriteTimeout());
     }
 
-    protected static function getSslOptions(AMQPConnectionConfig $config): array {
+    /**
+     * @return array<string,mixed>
+     */
+    protected static function getSslOptions(AMQPConnectionConfig $config): array
+    {
         return array_filter([
-                                'cafile' => $config->getSslCaCert(),
-                                'capath' => $config->getSslCaPath(),
-                                'local_cert' => $config->getSslCert(),
-                                'local_pk' => $config->getSslKey(),
-                                'verify_peer' => $config->getSslVerify(),
-                                'verify_peer_name' => $config->getSslVerifyName(),
-                                'passphrase' => $config->getSslPassPhrase(),
-                                'ciphers' => $config->getSslCiphers(),
-                                'security_level' => $config->getSslSecurityLevel(),
-                            ], static function ($value) {
-                                return $value !== null;
-                            });
+            'cafile' => $config->getSslCaCert(),
+            'capath' => $config->getSslCaPath(),
+            'local_cert' => $config->getSslCert(),
+            'local_pk' => $config->getSslKey(),
+            'verify_peer' => $config->getSslVerify(),
+            'verify_peer_name' => $config->getSslVerifyName(),
+            'passphrase' => $config->getSslPassPhrase(),
+            'ciphers' => $config->getSslCiphers(),
+            'security_level' => $config->getSslSecurityLevel(),
+        ], static function ($value) {
+            return $value !== null;
+        });
     }
 
-    protected static function assertConnectionFromConfig(string $connection): void {
+    /**
+     * @param  class-string<AbstractConnection>  $connection
+     */
+    protected static function assertConnectionFromConfig(string $connection): void
+    {
         if (
+            /** @phpstan-ignore booleanAnd.alwaysFalse */
             $connection !== self::CONNECTION_TYPE_DEFAULT
+            /** @phpstan-ignore function.alreadyNarrowedType */
             && ! is_subclass_of($connection, self::CONNECTION_TYPE_EXTENDED)
         ) {
             throw new AMQPLogicException(
@@ -189,7 +224,11 @@ class ConnectionFactory
         }
     }
 
-    protected static function assertSocketConnection($connection, AMQPConnectionConfig $config): void {
+    /**
+     * @param  class-string<AbstractConnection>  $connection
+     */
+    protected static function assertSocketConnection(string $connection, AMQPConnectionConfig $config): void
+    {
         self::assertExtendedOf($connection, self::CONNECTION_SUB_TYPE_SOCKET);
 
         if ($config->isSecure()) {
@@ -197,28 +236,43 @@ class ConnectionFactory
         }
     }
 
-    protected static function assertStreamConnection($connection): void {
+    /**
+     * @param  class-string<AbstractConnection>  $connection
+     */
+    protected static function assertStreamConnection(string $connection): void
+    {
         self::assertExtendedOf($connection, self::CONNECTION_SUB_TYPE_STREAM);
     }
 
-    protected static function assertSSLConnection($connection): void {
+    /**
+     * @param  class-string<AbstractConnection>  $connection
+     */
+    protected static function assertSSLConnection(string $connection): void
+    {
         self::assertExtendedOf($connection, self::CONNECTION_SUB_TYPE_SSL);
     }
 
-    protected static function assertExtendedOf($connection, string $parent): void {
+    /**
+     * @param  class-string<AbstractConnection>  $connection
+     * @param  class-string  $parent
+     */
+    protected static function assertExtendedOf(string $connection, string $parent): void
+    {
         if (! is_subclass_of($connection, $parent) && $connection !== $parent) {
             throw new AMQPLogicException(sprintf('The connection must extend: %s', class_basename($parent)));
         }
     }
 
     /**
-     * @return mixed
+     * @param  class-string<AbstractConnection>  $connection
+     * @param  array<string,mixed>  $config
      *
      * @throws Exception
      *
      * @deprecated This is the fallback method, update your config asap. (example: connection => 'default')
      */
-    protected static function createLazyConnection($connection, array $config): AbstractConnection {
+    protected static function createLazyConnection(string $connection, array $config): AbstractConnection
+    {
         return $connection::create_connection(
             Arr::shuffle(Arr::get($config, ConfigFactory::CONFIG_HOSTS, [])),
             Arr::add(Arr::get($config, 'options', []), 'heartbeat', 0)
