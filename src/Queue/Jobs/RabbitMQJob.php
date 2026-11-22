@@ -142,7 +142,7 @@ class RabbitMQJob extends Job implements JobContract
         return $this->message;
     }
 
-    public function fire(): void {
+    public function fire() {
         $payload = $this->payload();
         $job = $this->getRabbitMQMessageHeaders()['rr_job'];
 
