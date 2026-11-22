@@ -249,9 +249,10 @@ For example the class `App\Jobs\Namespace1\Namespace2\JobName` will be transform
 The payload is serialized and deserialized using the [Symfony Serializer](https://symfony.com/doc/current/components/serializer.html) component.
 
 The job metadata is passed as RabbitMQ message applications headers using the `rr_*` keys.
+
 ## Development
 
-The library requires PHP 8.3 or newer and Laravel 12.59 or newer (the consumer follows the `Worker::stop()` signature with a stop reason). Developing it needs PHP 8.4 or newer, because the dev dependency `esoul-cz/coding-standard` requires it. CI runs on PHP 8.5, with the tests also re-run on PHP 8.4 and 8.6.
+The library requires Laravel 12 (12.59 or newer, the consumer follows the `Worker::stop()` signature with a stop reason). `composer.json` declares PHP 8.3 or newer, but the effective minimum is PHP 8.4.1 because `symfony/serializer` and `symfony/property-access` ^8 require it. Developing the library also needs PHP 8.4 or newer, because the dev dependency `esoul-cz/coding-standard` requires it. CI runs on PHP 8.5, with the tests also re-run on PHP 8.4 and 8.6.
 
 ```bash
 composer update      # libraries do not commit composer.lock
@@ -263,4 +264,4 @@ composer test        # PHPUnit
 
 The Jenkins pipeline (`phpPackagePipeline`) runs `composer validate --strict`, PHPStan, the code style check, `composer audit` and PHPUnit on PHP 8.5, then PHPUnit on the other supported PHP versions, and finally triggers the Satis rebuild on `master`.
 
-There are no automated tests in the repository yet, so `composer test` currently reports that no tests were executed and passes. Tests that need a running RabbitMQ broker should be put in the PHPUnit group `rabbitmq` and excluded from the default run in `phpunit.xml.dist`.
+There are no automated tests in the repository yet, so `composer test` currently reports that no tests were executed and passes.
