@@ -30,28 +30,23 @@ class Consumer extends Worker
 
     protected ?object $currentJob = null;
 
-    public function setContainer(Container $value): void
-    {
+    public function setContainer(Container $value): void {
         $this->container = $value;
     }
 
-    public function setConsumerTag(string $value): void
-    {
+    public function setConsumerTag(string $value): void {
         $this->consumerTag = $value;
     }
 
-    public function setMaxPriority(int $value): void
-    {
+    public function setMaxPriority(int $value): void {
         $this->maxPriority = $value;
     }
 
-    public function setPrefetchSize(int $value): void
-    {
+    public function setPrefetchSize(int $value): void {
         $this->prefetchSize = $value;
     }
 
-    public function setPrefetchCount(int $value): void
-    {
+    public function setPrefetchCount(int $value): void {
         $this->prefetchCount = $value;
     }
 
@@ -63,8 +58,7 @@ class Consumer extends Worker
      *
      * @throws Throwable
      */
-    public function daemon($connectionName, $queue, WorkerOptions $options): int
-    {
+    public function daemon($connectionName, $queue, WorkerOptions $options): int {
         if ($this->supportsAsyncSignals()) {
             $this->listenForSignals();
         }
@@ -81,7 +75,7 @@ class Consumer extends Worker
         $this->channel->basic_qos(
             $this->prefetchSize,
             $this->prefetchCount,
-            false
+            false,
         );
 
         $jobClass = $connection->getJobClass();
@@ -110,7 +104,7 @@ class Consumer extends Worker
                     $connection,
                     $message,
                     $connectionName,
-                    $queue
+                    $queue,
                 );
 
                 $this->currentJob = $job;
@@ -131,14 +125,14 @@ class Consumer extends Worker
                 }
             },
             null,
-            $arguments
+            $arguments,
         );
 
         while ($this->channel->is_consuming()) {
             // Before reserving any jobs, we will make sure this queue is not paused and
             // if it is we will just pause this worker for a given amount of time and
             // make sure we do not need to kill this worker process off completely.
-            if (! $this->daemonShouldRun($options, $connectionName, $queue)) {
+            if ( ! $this->daemonShouldRun($options, $connectionName, $queue)) {
                 $this->pauseWorker($options, $lastRestart);
 
                 continue;
@@ -170,7 +164,7 @@ class Consumer extends Worker
                 $lastRestart,
                 (int) $startTime,
                 $jobsProcessed,
-                $this->currentJob
+                $this->currentJob,
             );
 
             if ($stopResult !== null) {
@@ -191,8 +185,7 @@ class Consumer extends Worker
      * @param  string  $connectionName
      * @param  string  $queue
      */
-    protected function daemonShouldRun(WorkerOptions $options, $connectionName, $queue): bool
-    {
+    protected function daemonShouldRun(WorkerOptions $options, $connectionName, $queue): bool {
         return ! ((($this->isDownForMaintenance)() && ! $options->force) || $this->paused);
     }
 
@@ -203,8 +196,7 @@ class Consumer extends Worker
      * @param  WorkerOptions|null  $options
      * @param  WorkerStopReason|null  $reason
      */
-    public function stop($status = 0, $options = null, $reason = null): int
-    {
+    public function stop($status = 0, $options = null, $reason = null): int {
         // Tell the server you are going to stop consuming.
         // It will finish up the last message and not send you any more.
         $this->channel->basic_cancel($this->consumerTag, false, true);

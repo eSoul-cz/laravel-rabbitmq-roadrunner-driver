@@ -11,8 +11,7 @@ class QueueFactory
     /**
      * @param  array<string,mixed>  $config
      */
-    public static function make(array $config = []): RabbitMQQueue
-    {
+    public static function make(array $config = []): RabbitMQQueue {
         $queueConfig = QueueConfigFactory::make($config);
         /** @var class-string<RabbitMQQueue>|'default' $worker */
         $worker = Arr::get($config, 'worker', 'default');

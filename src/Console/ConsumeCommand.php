@@ -37,8 +37,7 @@ class ConsumeCommand extends WorkCommand
 
     protected $description = 'Consume messages';
 
-    public function handle(): ?int
-    {
+    public function handle(): ?int {
         /** @var Consumer $consumer */
         $consumer = $this->worker;
 
@@ -56,8 +55,7 @@ class ConsumeCommand extends WorkCommand
         return parent::handle();
     }
 
-    protected function consumerTag(): string
-    {
+    protected function consumerTag(): string {
         /** @var string|null $consumerTag */
         $consumerTag = $this->option('consumer-tag');
         if ($consumerTag) {
@@ -69,7 +67,7 @@ class ConsumeCommand extends WorkCommand
         $consumerTag = implode('_', [
             Str::slug(config('app.name', 'laravel')),
             Str::slug($name),
-            md5(serialize($this->options()).Str::random(16).getmypid()),
+            md5(serialize($this->options()) . Str::random(16) . getmypid()),
         ]);
 
         return Str::substr($consumerTag, 0, 255);
