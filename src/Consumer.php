@@ -144,7 +144,7 @@ class Consumer extends Worker
             } catch (AMQPRuntimeException $exception) {
                 $this->exceptions->report($exception);
 
-                $this->kill(self::EXIT_ERROR, $options);
+                $this->kill(self::EXIT_ERROR, $options, WorkerStopReason::LostConnection);
             } catch (Throwable $exception) {
                 $this->exceptions->report($exception);
 
