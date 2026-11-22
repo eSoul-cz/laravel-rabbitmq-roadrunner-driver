@@ -17,8 +17,7 @@ class RabbitMQConnector implements ConnectorInterface
 {
     protected Dispatcher $dispatcher;
 
-    public function __construct(Dispatcher $dispatcher)
-    {
+    public function __construct(Dispatcher $dispatcher) {
         $this->dispatcher = $dispatcher;
     }
 
@@ -30,8 +29,7 @@ class RabbitMQConnector implements ConnectorInterface
      *
      * @throws Exception
      */
-    public function connect(array $config): Queue
-    {
+    public function connect(array $config): Queue {
         $connection = ConnectionFactory::make($config);
 
         $queue = QueueFactory::make($config)->setConnection($connection);
@@ -40,7 +38,7 @@ class RabbitMQConnector implements ConnectorInterface
             WorkerStopping::class,
             static function () use ($queue): void {
                 $queue->close();
-            }
+            },
         );
 
         return $queue;

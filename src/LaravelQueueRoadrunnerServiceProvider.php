@@ -13,16 +13,14 @@ use Spatie\LaravelPackageTools\PackageServiceProvider;
 
 class LaravelQueueRoadrunnerServiceProvider extends PackageServiceProvider
 {
-    public function configurePackage(Package $package): void
-    {
+    public function configurePackage(Package $package): void {
         $package
             ->name('laravel-rabbitmq-roadrunner-driver')
             ->hasConfigFile('rabbitmq')
             ->hasCommand(ConsumeCommand::class);
     }
 
-    public function packageRegistered(): void
-    {
+    public function packageRegistered(): void {
         if ($this->app->runningInConsole()) {
             $this->app->singleton(
                 'rabbitmq.consumer',
@@ -35,9 +33,9 @@ class LaravelQueueRoadrunnerServiceProvider extends PackageServiceProvider
                         $this->app->get('queue'),
                         $this->app->get('events'),
                         $this->app->get(ExceptionHandler::class),
-                        $isDownForMaintenance
+                        $isDownForMaintenance,
                     );
-                }
+                },
             );
 
             $this->app->singleton(
@@ -47,7 +45,7 @@ class LaravelQueueRoadrunnerServiceProvider extends PackageServiceProvider
                         $app->get('rabbitmq.consumer'),
                         $app->get('cache.store'),
                     );
-                }
+                },
             );
         }
     }
@@ -55,8 +53,7 @@ class LaravelQueueRoadrunnerServiceProvider extends PackageServiceProvider
     /**
      * Register the application's event listeners.
      */
-    public function packageBooted(): void
-    {
+    public function packageBooted(): void {
         /** @var QueueManager $queue */
         $queue = $this->app->get('queue');
 
@@ -64,7 +61,7 @@ class LaravelQueueRoadrunnerServiceProvider extends PackageServiceProvider
             'rabbitmq',
             function () {
                 return new RabbitMQConnector($this->app->get('events'));
-            }
+            },
         );
     }
 }

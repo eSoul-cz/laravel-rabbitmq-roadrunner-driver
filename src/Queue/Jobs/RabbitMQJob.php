@@ -29,7 +29,7 @@ class RabbitMQJob extends Job implements JobContract
         protected RabbitMQQueue $rabbitmq,
         protected AMQPMessage $message,
         string $connectionName,
-        string $queue
+        string $queue,
     ) {
         /** @phpstan-ignore assign.propertyType */
         $this->container = $container;
@@ -41,13 +41,11 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * {@inheritdoc}
      */
-    public function getJobId()
-    {
+    public function getJobId() {
         return $this->getRabbitMQMessageHeaders()['rr_id'] ?? $this->decoded['id'] ?? null;
     }
 
-    public function getName()
-    {
+    public function getName() {
         return $this->getRabbitMQMessageHeaders()['rr_job'] ?? $this->decoded['job'] ?? null;
     }
 
@@ -56,8 +54,7 @@ class RabbitMQJob extends Job implements JobContract
      *
      * @return array<string,mixed>|null
      */
-    protected function getRabbitMQMessageHeaders(): ?array
-    {
+    protected function getRabbitMQMessageHeaders(): ?array {
         /** @var AMQPTable|null $headers */
         $headers = Arr::get($this->message->get_properties(), 'application_headers');
 
@@ -68,16 +65,14 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * {@inheritdoc}
      */
-    public function getRawBody(): string
-    {
+    public function getRawBody(): string {
         return $this->message->getBody();
     }
 
     /**
      * {@inheritdoc}
      */
-    public function markAsFailed(): void
-    {
+    public function markAsFailed(): void {
         parent::markAsFailed();
 
         // We must tel rabbitMQ this Job is failed
@@ -91,13 +86,12 @@ class RabbitMQJob extends Job implements JobContract
      *
      * @throws BindingResolutionException
      */
-    public function delete(): void
-    {
+    public function delete(): void {
         parent::delete();
 
         // When delete is called and the Job was not failed, the message must be acknowledged.
         // This is because this is a controlled call by a developer. So the message was handled correct.
-        if (! $this->failed) {
+        if ( ! $this->failed) {
             $this->rabbitmq->ack($this);
         }
     }
@@ -109,8 +103,7 @@ class RabbitMQJob extends Job implements JobContract
      *
      * @throws AMQPProtocolChannelException
      */
-    public function release($delay = 0): void
-    {
+    public function release($delay = 0): void {
         parent::release();
 
         // Always create a new message when this Job is released
@@ -125,9 +118,8 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * {@inheritdoc}
      */
-    public function attempts(): int
-    {
-        if (! $data = $this->getRabbitMQMessageHeaders()) {
+    public function attempts(): int {
+        if ( ! $data = $this->getRabbitMQMessageHeaders()) {
             return 1;
         }
 
@@ -139,28 +131,25 @@ class RabbitMQJob extends Job implements JobContract
     /**
      * Get the underlying RabbitMQ connection.
      */
-    public function getRabbitMQ(): RabbitMQQueue
-    {
+    public function getRabbitMQ(): RabbitMQQueue {
         return $this->rabbitmq;
     }
 
     /**
      * Get the underlying RabbitMQ message.
      */
-    public function getRabbitMQMessage(): AMQPMessage
-    {
+    public function getRabbitMQMessage(): AMQPMessage {
         return $this->message;
     }
 
-    public function fire()
-    {
+    public function fire(): void {
         $payload = $this->payload();
         $job = $this->getRabbitMQMessageHeaders()['rr_job'];
 
         $baseNamespace = '\\App\\';
 
         $parts = explode('.', $job);
-        $class = $baseNamespace.implode('\\', array_map('ucfirst', $parts));
+        $class = $baseNamespace . implode('\\', array_map('ucfirst', $parts));
 
         /** @var class-string|null $payloadClass */
         $payloadClass = $payload['payloadClass'] ?? null;
@@ -178,8 +167,7 @@ class RabbitMQJob extends Job implements JobContract
      * @param  array<string,mixed>  $data
      * @return T|null
      */
-    protected static function unserialize(string $payloadClass, array $data): ?object
-    {
+    protected static function unserialize(string $payloadClass, array $data): ?object {
         return RabbitMQQueue::getSerializer()->denormalize($data, $payloadClass, 'json');
     }
 }
