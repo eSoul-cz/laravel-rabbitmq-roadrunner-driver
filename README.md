@@ -251,7 +251,7 @@ The payload is serialized and deserialized using the [Symfony Serializer](https:
 The job metadata is passed as RabbitMQ message applications headers using the `rr_*` keys.
 ## Development
 
-Requires PHP 8.3 or newer and Laravel 12.59 or newer (the consumer follows the `Worker::stop()` signature with a stop reason). CI runs on PHP 8.5, with the tests also re-run on PHP 8.4 and 8.6.
+The library requires PHP 8.3 or newer and Laravel 12.59 or newer (the consumer follows the `Worker::stop()` signature with a stop reason). Developing it needs PHP 8.4 or newer, because the dev dependency `esoul-cz/coding-standard` requires it. CI runs on PHP 8.5, with the tests also re-run on PHP 8.4 and 8.6.
 
 ```bash
 composer update      # libraries do not commit composer.lock
