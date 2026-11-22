@@ -8,6 +8,7 @@ use Esoul\LaravelRoadrunnerQueueDriver\Queue\RabbitMQQueue;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Queue\Worker;
 use Illuminate\Queue\WorkerOptions;
+use Illuminate\Queue\WorkerStopReason;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Exception\AMQPRuntimeException;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -164,7 +165,7 @@ class Consumer extends Worker
             // Finally, we will check to see if we have exceeded our memory limits or if
             // the queue should restart based on other indications. If so, we'll stop
             // this worker and let whatever is "monitoring" it restart the process.
-            $status = $this->stopIfNecessary(
+            $stopResult = $this->stopIfNecessary(
                 $options,
                 $lastRestart,
                 (int) $startTime,
@@ -172,8 +173,10 @@ class Consumer extends Worker
                 $this->currentJob
             );
 
-            if (! is_null($status)) {
-                return $this->stop($status, $options);
+            if ($stopResult !== null) {
+                [$status, $reason] = $stopResult;
+
+                return $this->stop($status, $options, $reason);
             }
 
             $this->currentJob = null;
@@ -198,13 +201,14 @@ class Consumer extends Worker
      *
      * @param  int  $status
      * @param  WorkerOptions|null  $options
+     * @param  WorkerStopReason|null  $reason
      */
-    public function stop($status = 0, $options = null): int
+    public function stop($status = 0, $options = null, $reason = null): int
     {
         // Tell the server you are going to stop consuming.
         // It will finish up the last message and not send you any more.
         $this->channel->basic_cancel($this->consumerTag, false, true);
 
-        return parent::stop($status, $options);
+        return parent::stop($status, $options, $reason);
     }
 }
