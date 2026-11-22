@@ -75,7 +75,6 @@ class ConnectionFactory
     {
         $connection = (string) Arr::get($config, self::CONFIG_CONNECTION, self::CONNECTION_TYPE_DEFAULT);
 
-        /** @phpstan-ignore argument.type */
         self::assertConnectionFromConfig($connection);
 
         /** @phpstan-ignore return.type */
@@ -203,14 +202,12 @@ class ConnectionFactory
     }
 
     /**
-     * @param  class-string<AbstractConnection>  $connection
+     * @param  string  $connection  Raw value from the config: `default` or a class extending {@see AbstractConnection}.
      */
     protected static function assertConnectionFromConfig(string $connection): void
     {
         if (
-            /** @phpstan-ignore booleanAnd.alwaysFalse */
             $connection !== self::CONNECTION_TYPE_DEFAULT
-            /** @phpstan-ignore function.alreadyNarrowedType */
             && ! is_subclass_of($connection, self::CONNECTION_TYPE_EXTENDED)
         ) {
             throw new AMQPLogicException(
